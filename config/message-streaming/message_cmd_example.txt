@@ -1,0 +1,9 @@
+#docker start command as background process. store message as file with directorey nat_store
+docker run --name natstream -d -p 4222:4222 -p 8222:8222 nats-streaming -cid api-cluster -store file -dir ~/nat_store --max_msgs 0 --max_bytes 0
+#docker start command
+docker run --name natstream -p 4222:4222 -p 8222:8222 -v nats-streaming -cid api-cluster -store file -dir ~/nat_store --max_msgs 0 --max_bytes 0
+
+#command run nat-streaming
+nats-streaming-server -cid api-cluster -store file -dir ~/nat_store --max_msgs 0 --max_bytes 0
+#command run with config
+nats-streaming-server --config <path-to-config>/au-streaming.cfg

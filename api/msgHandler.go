@@ -131,7 +131,6 @@ func (m *MessageSubscriber) Close() error {
 
 //SubscribeEvent subscribe
 func (m *MessageSubscriber) SubscribeEvent(channel string, durableID string, fn stan.MsgHandler) {
-	//if nil, it will assign default handler (example implementation).
 	handler := func(msg *stan.Msg) {
 		if m.lastProcessedSeq == 0 {
 			log.Println("wait for redelivered msg, seq:", msg.Sequence, ", info:", msg)
@@ -151,6 +150,7 @@ func (m *MessageSubscriber) SubscribeEvent(channel string, durableID string, fn 
 		msg.Ack()
 		atomic.SwapUint64(&m.lastProcessedSeq, msg.Sequence)
 	}
+	//if durableID is nil, it will assign default handler above (example implementation).
 	if fn != nil {
 		handler = fn
 	}

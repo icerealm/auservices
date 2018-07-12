@@ -133,7 +133,7 @@ func (m *MessageSubscriber) Close() error {
 func (m *MessageSubscriber) SubscribeEvent(channel string, durableID string, fn stan.MsgHandler) {
 	handler := func(msg *stan.Msg) {
 		if m.lastProcessedSeq == 0 {
-			log.Println("wait for redelivered msg, seq:", msg.Sequence, ", info:", msg)
+			log.Println("start up!! redelivered msg, seq:", msg.Sequence, ", info:", msg)
 			//initially start and require logic to setup latest message sequence.
 			atomic.SwapUint64(&m.lastProcessedSeq, msg.Sequence)
 			return
@@ -155,7 +155,7 @@ func (m *MessageSubscriber) SubscribeEvent(channel string, durableID string, fn 
 		handler = fn
 	}
 	sc := *m.msgConn
-	wait, _ := time.ParseDuration("5s")
+	wait, _ := time.ParseDuration("10s")
 	sc.Subscribe(channel,
 		handler,
 		stan.DurableName(durableID),

@@ -1,0 +1,43 @@
+syntax = "proto3";
+package api;
+
+message PingMessage {
+    string greeting = 1;
+  }
+service Ping {
+    rpc SayHello(PingMessage) returns (PingMessage) {}
+}
+enum CategoryType {
+    EXPENSE = 0;
+    INCOME = 1;
+}
+message Category {
+    string cid = 1;
+    string name = 2;
+    string description = 3;
+    CategoryType type = 4;
+}
+
+message Empty {}
+
+message CategoryQuery {
+    string query = 1;
+}
+
+message CategoryList {
+    repeated Category categories = 2;
+}
+
+message CategoryResponse {
+    string responseMsg = 2;
+}
+
+message CategortyTypeValues{
+    map<string, int32> types = 1;
+}
+
+service CategoryServices {
+    rpc FindCatetories(CategoryQuery) returns (CategoryList) {}
+    rpc AddCategory(Category) returns (CategoryResponse) {}
+    rpc GetAllCategoryTypeValues(Empty) returns (CategortyTypeValues) {}
+}

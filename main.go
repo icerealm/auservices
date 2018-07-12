@@ -37,7 +37,7 @@ func main() {
 		os.Exit(1)
 	}
 	defer sub.Close()
-	sub.SubscribeEvent("test-chan", nil) //test
+	sub.SubscribeEvent("test-chan", "i-will-remember", nil) //test
 
 	resources := []api.MessageHandler{pub, sub}
 

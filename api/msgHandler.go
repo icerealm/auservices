@@ -2,6 +2,7 @@ package api
 
 import (
 	"log"
+	"sync/atomic"
 	"time"
 
 	"github.com/nats-io/go-nats-streaming"
@@ -129,14 +130,36 @@ func (m *MessageSubscriber) Close() error {
 }
 
 //SubscribeEvent subscribe
-func (m *MessageSubscriber) SubscribeEvent(channel string, fn stan.MsgHandler) {
+func (m *MessageSubscriber) SubscribeEvent(channel string, durableID string, fn stan.MsgHandler) {
+	//if nil, it will assign default handler (example implementation).
 	handler := func(msg *stan.Msg) {
-		log.Println("seq:", msg.Sequence, ", msg comming:", msg)
+		if m.lastProcessedSeq == 0 {
+			log.Println("wait for redelivered msg, seq:", msg.Sequence, ", info:", msg)
+			//initially start and require logic to setup latest message sequence.
+			atomic.SwapUint64(&m.lastProcessedSeq, msg.Sequence)
+			return
+		}
+		if m.lastProcessedSeq >= msg.Sequence {
+			log.Println("redelivered msg, seq:", msg.Sequence, ", info:", msg)
+			atomic.SwapUint64(&m.lastProcessedSeq, msg.Sequence)
+			//do process for redeliverd message
+			msg.Ack()
+			return
+		}
+		log.Println("new msg, seq:", msg.Sequence, ", info:", msg)
+		//do process for new message...
 		msg.Ack()
+		atomic.SwapUint64(&m.lastProcessedSeq, msg.Sequence)
 	}
 	if fn != nil {
 		handler = fn
 	}
 	sc := *m.msgConn
-	sc.Subscribe(channel, handler, stan.SetManualAckMode(), stan.AckWait(time.Second))
+	wait, _ := time.ParseDuration("5s")
+	sc.Subscribe(channel,
+		handler,
+		stan.DurableName(durableID),
+		stan.MaxInflight(20),
+		stan.SetManualAckMode(),
+		stan.AckWait(wait))
 }

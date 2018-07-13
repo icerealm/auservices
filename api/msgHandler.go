@@ -1,7 +1,6 @@
 package api
 
 import (
-	"encoding/json"
 	"log"
 	"sync/atomic"
 	"time"
@@ -148,9 +147,7 @@ func (m *MessageSubscriber) SubscribeEvent(channel string, durableID string, fn 
 			msg.Ack()
 			return
 		}
-		category := Category{}
-		json.Unmarshal(msg.Data, &category)
-		log.Println("new msg, data:", category)
+		log.Println("new msg, procesing data")
 		//do process for new message...
 		msg.Ack()
 		atomic.SwapUint64(&m.lastProcessedSeq, msg.Sequence)

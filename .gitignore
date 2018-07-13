@@ -1,3 +1,4 @@
 tmp/
 keys.cfg
 keys.prod.json
+*.test

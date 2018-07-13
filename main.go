@@ -14,11 +14,11 @@ import (
 )
 
 func main() {
-	_, err := utilities.LoadConfiguration(os.Args[1])
+	cfg, err := utilities.LoadConfiguration(os.Args[1])
 	if err != nil {
 		log.Panicln("no configuration file found with path specified:", os.Args[1])
 	}
-	port := 7777
+	port := cfg.ApplicationPort
 	ltsnr, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 
 	if err != nil {

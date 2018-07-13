@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"log"
 	"sync/atomic"
 	"time"
@@ -132,22 +133,21 @@ func (m *MessageSubscriber) Close() error {
 //SubscribeEvent subscribe
 func (m *MessageSubscriber) SubscribeEvent(channel string, durableID string, fn stan.MsgHandler) {
 	handler := func(msg *stan.Msg) {
-		log.Println("msg info:", msg)
+		cmnt := fmt.Sprintf("msg info:%v", msg)
 		if m.lastProcessedSeq == 0 {
-			log.Println("start up")
+			log.Println("start up,", cmnt)
 			//initially start and require logic to setup latest message sequence.
 			atomic.SwapUint64(&m.lastProcessedSeq, msg.Sequence)
 			return
 		}
 		if msg.Redelivered {
-			log.Println("redelivered")
+			log.Println("redelivered,", cmnt)
 			atomic.SwapUint64(&m.lastProcessedSeq, msg.Sequence)
 			//do process for redeliverd message
-
 			msg.Ack()
 			return
 		}
-		log.Println("new msg, procesing data")
+		log.Println("new msg, procesing data,", cmnt)
 		//do process for new message...
 		msg.Ack()
 		atomic.SwapUint64(&m.lastProcessedSeq, msg.Sequence)

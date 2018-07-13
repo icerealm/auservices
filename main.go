@@ -19,6 +19,12 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
+	resources := []api.MessageHandler{}
+	subscribers := api.GetEventSubscribers().Subscribers
+	for _, s := range subscribers {
+		defer s.Close()
+		resources = append(resources, s)
+	}
 
 	pub, err := api.CreateMessagePublisher(
 		api.MessageHanderInfo{},
@@ -28,18 +34,7 @@ func main() {
 		os.Exit(1)
 	}
 	defer pub.Close()
-
-	sub, err := api.CreateMessageSubscriber(
-		api.MessageHanderInfo{},
-	)
-	if err != nil {
-		log.Fatalf("could not initial subscriber")
-		os.Exit(1)
-	}
-	defer sub.Close()
-	sub.SubscribeEvent("test-chan", "i-will-remember", nil) //test
-
-	resources := []api.MessageHandler{pub, sub}
+	resources = append(resources, pub)
 
 	si := api.Server{
 		MsgPublisher: pub,

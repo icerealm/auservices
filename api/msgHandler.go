@@ -9,17 +9,17 @@ import (
 	"github.com/nats-io/go-nats-streaming"
 )
 
-const (
-	kclusterID          = "api-cluster"
-	kclientPublisherID  = "publisher-event-store"
-	kclientSubscriberID = "subscriber-event-store"
-)
-
 //MessageHanderInfo configuration information
 type MessageHanderInfo struct {
 	clusterID string
 	clientID  string
 	msgURL    string
+}
+
+//ConfirmationMessage represent data reponse from async channel.
+type ConfirmationMessage struct {
+	response string
+	err      error
 }
 
 // DefaultMessagePublisherInfo represent default message for publisher
@@ -92,7 +92,7 @@ func (m *MessagePublisher) Close() error {
 }
 
 // PublishEvent publish
-func (m *MessagePublisher) PublishEvent(channel string, msg string) {
+func (m *MessagePublisher) PublishEvent(channel string, msg string, fn stan.AckHandler) {
 	publishMsgHandler := func(uid string, err error) {
 		if err != nil {
 			log.Printf("publishMsgHandler error msg, %v\n", err)
@@ -101,6 +101,9 @@ func (m *MessagePublisher) PublishEvent(channel string, msg string) {
 		}
 	}
 	sc := *m.msgConn
+	if fn != nil {
+		publishMsgHandler = fn
+	}
 	if uid, err := sc.PublishAsync(channel, []byte(msg), publishMsgHandler); err != nil {
 		log.Printf("error publishing msg %v, error:%v, uid:%v", msg, err, uid)
 	}

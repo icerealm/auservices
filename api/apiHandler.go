@@ -9,7 +9,8 @@ import (
 
 //Server represents gRPC server.
 type Server struct {
-	MsgPublisher *MessagePublisher
+	MsgPublisher  *MessagePublisher
+	MsgSubscriber *MessageSubscriber
 }
 
 // SayHello generates response to a Ping request
@@ -55,10 +56,32 @@ func (s *Server) AddCategory(ctx context.Context, in *Category) (*CategoryRespon
 			ResponseMsg: "FAILED",
 		}, err
 	}
-	s.MsgPublisher.PublishEvent("test-chan", string(b))
+	c := make(chan ConfirmationMessage)
+	fn := func(uid string, err error) {
+		if err != nil {
+			resp := ConfirmationMessage{
+				response: "ERROR",
+				err:      err,
+			}
+			c <- resp
+		} else {
+			resp := ConfirmationMessage{
+				response: uid,
+				err:      nil,
+			}
+			c <- resp
+		}
+	}
+	s.MsgPublisher.PublishEvent(kcategoryChannelID, string(b), fn)
+
+	if ret := <-c; ret.err != nil {
+		return &CategoryResponse{
+			ResponseMsg: "Error",
+		}, ret.err
+	}
 	return &CategoryResponse{
-		ResponseMsg: "CREATED",
-	}, nil
+		ResponseMsg: "Created",
+	}, err
 }
 
 //GetAllCategoryTypeValues all category type enum values

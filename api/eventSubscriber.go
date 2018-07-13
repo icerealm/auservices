@@ -3,6 +3,8 @@ package api
 import (
 	"log"
 	"os"
+
+	"github.com/nats-io/go-nats-streaming"
 )
 
 const (
@@ -18,25 +20,40 @@ type EventSubscriber struct {
 	Subscribers   []*MessageSubscriber
 }
 
+//AppendSubscriber append a subscriber.
+func (s *EventSubscriber) AppendSubscriber(channelID string, ms *MessageSubscriber) {
+	if s.subscriberMap == nil {
+		s.subscriberMap = make(map[string]*MessageSubscriber)
+	}
+	s.subscriberMap[channelID] = ms
+	s.Subscribers = append(s.Subscribers, ms)
+}
+
 //GetEventSubscribers get eventsubscribers instance.
 func GetEventSubscribers() *EventSubscriber {
-	subMap := make(map[string]*MessageSubscriber)
-	subscribers := []*MessageSubscriber{}
+	eventSubscriber = &EventSubscriber{}
 	//initial category subscriber
-	categorySub, err := CreateMessageSubscriber(
+	categorySub := initCategorySubscriber()
+	eventSubscriber.AppendSubscriber(kcategoryChannelID, categorySub)
+
+	return eventSubscriber
+}
+
+func initCategorySubscriber() *MessageSubscriber {
+	//initial category subscriber
+	sub, err := CreateMessageSubscriber(
 		MessageHanderInfo{},
 	)
 	if err != nil {
 		log.Fatalf("could not initial category subscriber")
 		os.Exit(1)
 	}
-	categorySub.SubscribeEvent(kcategoryChannelID, durableCategoryID, nil) //test
-	subMap[durableCategoryID] = categorySub
-	subscribers = append(subscribers, categorySub)
+	sub.SubscribeEvent(kcategoryChannelID, durableCategoryID, categoryEventMsgHandler)
+	return sub
+}
 
-	eventSubscriber = &EventSubscriber{
-		subscriberMap: subMap,
-		Subscribers:   subscribers,
-	}
-	return eventSubscriber
+//categoryEventMsgHandler to handle business logic for category event
+func categoryEventMsgHandler(msg *stan.Msg) {
+	log.Println("category event, msg info:", msg)
+	msg.Ack()
 }

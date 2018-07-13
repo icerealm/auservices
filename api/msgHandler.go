@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"log"
 	"sync/atomic"
 	"time"
@@ -132,20 +133,24 @@ func (m *MessageSubscriber) Close() error {
 //SubscribeEvent subscribe
 func (m *MessageSubscriber) SubscribeEvent(channel string, durableID string, fn stan.MsgHandler) {
 	handler := func(msg *stan.Msg) {
+		log.Println("msg info:", msg)
 		if m.lastProcessedSeq == 0 {
-			log.Println("start up!! redelivered msg, seq:", msg.Sequence, ", info:", msg)
+			log.Println("start up")
 			//initially start and require logic to setup latest message sequence.
 			atomic.SwapUint64(&m.lastProcessedSeq, msg.Sequence)
 			return
 		}
-		if m.lastProcessedSeq >= msg.Sequence {
-			log.Println("redelivered msg, seq:", msg.Sequence, ", info:", msg)
+		if msg.Redelivered {
+			log.Println("redelivered")
 			atomic.SwapUint64(&m.lastProcessedSeq, msg.Sequence)
 			//do process for redeliverd message
+
 			msg.Ack()
 			return
 		}
-		log.Println("new msg, seq:", msg.Sequence, ", info:", msg)
+		category := Category{}
+		json.Unmarshal(msg.Data, &category)
+		log.Println("new msg, data:", category)
 		//do process for new message...
 		msg.Ack()
 		atomic.SwapUint64(&m.lastProcessedSeq, msg.Sequence)

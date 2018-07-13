@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"log"
 
 	context "golang.org/x/net/context"
@@ -48,8 +49,13 @@ func (s *Server) FindCatetories(ctx context.Context, in *CategoryQuery) (*Catego
 // AddCategory add new category to store
 func (s *Server) AddCategory(ctx context.Context, in *Category) (*CategoryResponse, error) {
 	log.Printf("insert category with %v", *in)
-	// msgSvr := msgServer{}
-	s.MsgPublisher.PublishEvent("test-chan", in.String())
+	b, err := json.Marshal(in)
+	if err != nil {
+		return &CategoryResponse{
+			ResponseMsg: "FAILED",
+		}, err
+	}
+	s.MsgPublisher.PublishEvent("test-chan", string(b))
 	return &CategoryResponse{
 		ResponseMsg: "CREATED",
 	}, nil

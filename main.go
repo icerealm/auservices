@@ -2,6 +2,7 @@ package main
 
 import (
 	"auservices/api"
+	"auservices/utilities"
 	"fmt"
 	"log"
 	"net"
@@ -13,6 +14,10 @@ import (
 )
 
 func main() {
+	_, err := utilities.LoadConfiguration(os.Args[1])
+	if err != nil {
+		log.Panicln("no configuration file found with path specified:", os.Args[1])
+	}
 	port := 7777
 	ltsnr, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 

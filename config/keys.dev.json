@@ -1,0 +1,7 @@
+{
+    "ApplicationPort": 7777,
+    "MsgURL": "nats://localhost:4222",
+    "MsgClusterID": "api-cluster",
+    "DbURL": "uma:admin123@tcp(127.0.0.1:3306)/audb",
+    "CategoryChannelID": "category-channel"
+}

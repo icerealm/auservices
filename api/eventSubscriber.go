@@ -54,6 +54,8 @@ func initCategorySubscriber() *MessageSubscriber {
 
 //categoryEventMsgHandler to handle business logic for category event
 func categoryEventMsgHandler(msg *stan.Msg) {
-	log.Println("category event, msg info:", msg)
-	msg.Ack()
+	go func(m *stan.Msg) {
+		log.Println("category event, msg info:", m)
+		m.Ack()
+	}(msg)
 }

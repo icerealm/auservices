@@ -50,7 +50,7 @@ func TestAddCetogory(t *testing.T) {
 	defer conn.Close()
 	c := api.NewCategoryServicesClient(conn)
 	resp, err := c.AddCategory(context.Background(),
-		&api.Category{Cid: "201",
+		&api.Category{
 			Name:        "test insertx 3",
 			Description: "test",
 			Type:        1})

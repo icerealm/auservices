@@ -11,17 +11,23 @@ enum CategoryType {
     EXPENSE = 0;
     INCOME = 1;
 }
+
+message User {
+    string userid = 1;
+}
+
 message Category {
-    string cid = 1;
     string name = 2;
     string description = 3;
     CategoryType type = 4;
+    User user = 5;
 }
 
 message Empty {}
 
 message CategoryQuery {
     string query = 1;
+    User user = 5;
 }
 
 message CategoryList {

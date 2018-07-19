@@ -1,4 +1,4 @@
-package api
+package msghandler
 
 const (
 	kclusterID          = "api-cluster"

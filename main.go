@@ -2,6 +2,7 @@ package main
 
 import (
 	"auservices/api"
+	"auservices/msghandler"
 	"auservices/utilities"
 	"fmt"
 	"log"
@@ -24,15 +25,15 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	resources := []api.MessageHandler{}
-	subscribers := api.GetEventSubscribers().Subscribers
+	resources := []msghandler.MessageHandler{}
+	subscribers := msghandler.GetEventSubscribers().Subscribers
 	for _, s := range subscribers {
 		defer s.Close()
 		resources = append(resources, s)
 	}
 
-	pub, err := api.CreateMessagePublisher(
-		api.MessageHanderInfo{},
+	pub, err := msghandler.CreateMessagePublisher(
+		msghandler.MessageHanderInfo{},
 	)
 	if err != nil {
 		log.Fatalf("could not initial pubhisher")
@@ -41,7 +42,7 @@ func main() {
 	defer pub.Close()
 	resources = append(resources, pub)
 
-	si := api.Server{
+	si := msghandler.Server{
 		MsgPublisher: pub,
 	}
 	grpcServer := grpc.NewServer()
@@ -52,7 +53,7 @@ func main() {
 
 	c := make(chan os.Signal)
 	signal.Notify(c, os.Interrupt)
-	go func(rs []api.MessageHandler) {
+	go func(rs []msghandler.MessageHandler) {
 		s := <-c
 		if s == syscall.SIGTERM || s == syscall.SIGINT {
 			log.Println("SIGTERM,SIGINT interupt - cleanup...")

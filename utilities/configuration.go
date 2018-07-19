@@ -10,6 +10,7 @@ type Configuration struct {
 	ApplicationPort   int
 	MsgURL            string
 	MsgClusterID      string
+	DbDriver          string
 	DbURL             string
 	CategoryChannelID string
 }

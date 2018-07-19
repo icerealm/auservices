@@ -2,6 +2,7 @@
     "ApplicationPort": 7777,
     "MsgURL": "nats://localhost:4222",
     "MsgClusterID": "api-cluster",
+    "DbDriver": "postgres",
     "DbURL": "postgres://docker:docker@localhost/au?sslmode=disable",
     "CategoryChannelID": "category-channel"
 }

@@ -1,6 +1,8 @@
-package api
+package msghandler
 
 import (
+	"auservices/domain"
+	"auservices/utilities"
 	"log"
 	"os"
 
@@ -56,6 +58,7 @@ func initCategorySubscriber() *MessageSubscriber {
 func categoryEventMsgHandler(msg *stan.Msg) {
 	go func(m *stan.Msg) {
 		log.Println("category event, msg info:", m)
+		domain.GetConnection(utilities.GetConfiguration())
 		m.Ack()
 	}(msg)
 }

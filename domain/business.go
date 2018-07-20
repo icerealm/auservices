@@ -83,5 +83,14 @@ func (cat *Category) Save(tx *sql.Tx) error {
 
 //Save persist ItemLine to item_line table
 func (itl *ItemLine) Save(tx *sql.Tx) error {
-	return nil
+	query := `INSERT INTO item_line(item_line_nm, item_line_desc, item_line_dt, item_value, category_id, user_id, rev_by, rev_dt)
+	VALUES($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP) RETURNING id`
+	return tx.QueryRow(query,
+		itl.itemLineNm,
+		itl.itemLineDesc,
+		itl.itemLineDt,
+		itl.itemLineValue,
+		itl.categoryID,
+		itl.userID,
+		itl.revBy).Scan(&itl.id)
 }

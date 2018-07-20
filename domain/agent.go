@@ -1,11 +1,15 @@
 package domain
 
+/**
+// This file contains business logic that transaction control is here.
+*/
 import (
 	"auservices/api"
 	"auservices/utilities"
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"strings"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -16,8 +20,33 @@ func GetConnection(cfg utilities.Configuration) (*sql.DB, error) {
 	return sql.Open(cfg.DbDriver, cfg.DbURL)
 }
 
+func getQueryValue(key string, query string) string {
+	s := strings.Split(query, "=")
+	if len(s) > 0 && strings.Trim(s[0], " ") == key {
+		return strings.Trim(s[1], " ")
+	}
+	return ""
+}
+
+//GetCategoryByName get category by name
+func GetCategoryByName(db *sql.DB, query *api.CategoryQuery) (*api.Category, error) {
+	name := getQueryValue("name", query.Query)
+	user := query.User
+	repo := Repository{dbConn: db}
+	category, err := repo.FindCategoryByName(name, user.Userid)
+	if err != nil {
+		return nil, err
+	}
+	return &api.Category{
+		Name:        category.categoryNm,
+		Description: category.categoryDesc,
+		Type:        api.CategoryType(api.CategoryType_value[category.categoryType]),
+		User:        &api.User{Userid: category.userID},
+	}, nil
+}
+
 //CreateCategory create category
-func CreateCategory(db *sql.DB, msgSequence int64, apiCategory *api.Category, whoUpdate string) error {
+func CreateCategory(db *sql.DB, msgSequence uint64, apiCategory *api.Category, whoUpdate string) error {
 	if len(whoUpdate) == 0 {
 		return errors.New("whoUpdate is required parameter and cannot be empty string")
 	}
@@ -53,6 +82,46 @@ func CreateCategory(db *sql.DB, msgSequence int64, apiCategory *api.Category, wh
 		revBy:        whoUpdate,
 	}
 	if err = category.Save(tx); err != nil {
+		tx.Rollback()
+		return err
+	}
+	tx.Commit()
+	return nil
+}
+
+//CreateItemLine create itemline.
+func CreateItemLine(db *sql.DB, msgSequence uint64, apiItemLine *api.ItemLine, whoUpdate string) error {
+	if len(whoUpdate) == 0 {
+		return errors.New("whoUpdate is required parameter and cannot be empty string")
+	}
+
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+
+	bjson, err := json.Marshal(apiItemLine)
+	if err != nil {
+		return err
+	}
+
+	msg := &CommandMessage{
+		messageSeq: msgSequence,
+		info:       string(bjson),
+		status:     MessagePending,
+		msgType:    ItemLineTypeMsg,
+		revBy:      whoUpdate,
+		createDt:   time.Now(),
+	}
+	if err = msg.Save(tx); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	itemLine := &ItemLine{
+		itemLineNm: apiItemLine.ItemLineNm,
+	}
+	if err = itemLine.Save(tx); err != nil {
 		tx.Rollback()
 		return err
 	}

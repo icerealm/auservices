@@ -2,6 +2,8 @@ package msghandler
 
 import (
 	"auservices/api"
+	"auservices/domain"
+	"auservices/utilities"
 	"encoding/json"
 	"log"
 
@@ -10,14 +12,13 @@ import (
 
 //Server represents gRPC server.
 type Server struct {
-	MsgPublisher  *MessagePublisher
-	MsgSubscriber *MessageSubscriber
+	MsgPublisher *MessagePublisher
 }
 
 // SayHello generates response to a Ping request
 func (s *Server) SayHello(ctx context.Context, in *api.PingMessage) (*api.PingMessage, error) {
 	log.Printf("Receive message %s", in.Greeting)
-	return &api.PingMessage{Greeting: "bar"}, nil
+	return &api.PingMessage{Greeting: "beating..."}, nil
 }
 
 // FindCatetories values
@@ -49,11 +50,11 @@ func (s *Server) FindCatetories(ctx context.Context, in *api.CategoryQuery) (*ap
 }
 
 // AddCategory add new category to store
-func (s *Server) AddCategory(ctx context.Context, in *api.Category) (*api.CategoryResponse, error) {
+func (s *Server) AddCategory(ctx context.Context, in *api.Category) (*api.MsgResponse, error) {
 	log.Printf("insert category with %v", *in)
 	b, err := json.Marshal(in)
 	if err != nil {
-		return &api.CategoryResponse{
+		return &api.MsgResponse{
 			ResponseMsg: "FAILED",
 		}, err
 	}
@@ -76,11 +77,11 @@ func (s *Server) AddCategory(ctx context.Context, in *api.Category) (*api.Catego
 	s.MsgPublisher.PublishEvent(kcategoryChannelID, string(b), fn)
 
 	if ret := <-c; ret.err != nil {
-		return &api.CategoryResponse{
+		return &api.MsgResponse{
 			ResponseMsg: "Error",
 		}, ret.err
 	}
-	return &api.CategoryResponse{
+	return &api.MsgResponse{
 		ResponseMsg: "Created",
 	}, err
 }
@@ -90,4 +91,51 @@ func (s *Server) GetAllCategoryTypeValues(ctx context.Context, in *api.Empty) (*
 	return &api.CategortyTypeValues{
 		Types: api.CategoryType_value,
 	}, nil
+}
+
+//GetCategoryByName get category info by cateogry name
+func (s *Server) GetCategoryByName(ctx context.Context, in *api.CategoryQuery) (*api.Category, error) {
+	db, err := domain.GetConnection(utilities.GetConfiguration())
+	if err != nil {
+		log.Fatalf("GetCategoryByName, error while connecting to database: %v", err)
+	}
+	defer db.Close()
+	return domain.GetCategoryByName(db, in)
+}
+
+// AddItemLine add new itemline to store
+func (s *Server) AddItemLine(ctx context.Context, in *api.ItemLine) (*api.MsgResponse, error) {
+	log.Printf("insert itemLine with %v", *in)
+	b, err := json.Marshal(in)
+	if err != nil {
+		return &api.MsgResponse{
+			ResponseMsg: "FAILED",
+		}, err
+	}
+	c := make(chan ConfirmationMessage)
+	fn := func(uid string, err error) {
+		if err != nil {
+			resp := ConfirmationMessage{
+				response: "ERROR",
+				err:      err,
+			}
+			c <- resp
+		} else {
+			resp := ConfirmationMessage{
+				response: uid,
+				err:      nil,
+			}
+			c <- resp
+		}
+	}
+	s.MsgPublisher.PublishEvent(kitemLineChannelID, string(b), fn)
+
+	if ret := <-c; ret.err != nil {
+		return &api.MsgResponse{
+			ResponseMsg: "Error",
+		}, ret.err
+	}
+	return &api.MsgResponse{
+		ResponseMsg: "Created",
+	}, err
 }

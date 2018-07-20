@@ -5,4 +5,5 @@ const (
 	kclientPublisherID  = "publisher-event-store"
 	kclientSubscriberID = "subscriber-event-store"
 	kcategoryChannelID  = "category-channel"
+	kitemLineChannelID  = "itemline-channel"
 )

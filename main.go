@@ -26,18 +26,18 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	resources := []msghandler.MessageHandler{}
+	//register subscribers
 	subscribers := msghandler.GetEventSubscribers().Subscribers
 	for _, s := range subscribers {
 		defer s.Close()
 		resources = append(resources, s)
 	}
-
+	//register publishers
 	pub, err := msghandler.CreateMessagePublisher(
 		msghandler.MessageHanderInfo{},
 	)
 	if err != nil {
 		log.Fatalf("could not initial pubhisher")
-		os.Exit(1)
 	}
 	defer pub.Close()
 	resources = append(resources, pub)
@@ -48,6 +48,7 @@ func main() {
 	grpcServer := grpc.NewServer()
 	api.RegisterPingServer(grpcServer, &si)
 	api.RegisterCategoryServicesServer(grpcServer, &si)
+	api.RegisterItemLineServiceServer(grpcServer, &si)
 
 	log.Println("serving at", port)
 

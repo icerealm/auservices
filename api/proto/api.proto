@@ -34,8 +34,8 @@ message CategoryList {
     repeated Category categories = 2;
 }
 
-message CategoryResponse {
-    string responseMsg = 2;
+message MsgResponse {
+    string responseMsg = 1;
 }
 
 message CategortyTypeValues{
@@ -44,6 +44,19 @@ message CategortyTypeValues{
 
 service CategoryServices {
     rpc FindCatetories(CategoryQuery) returns (CategoryList) {}
-    rpc AddCategory(Category) returns (CategoryResponse) {}
+    rpc AddCategory(Category) returns (MsgResponse) {}
     rpc GetAllCategoryTypeValues(Empty) returns (CategortyTypeValues) {}
+    rpc GetCategoryByName(CategoryQuery) returns (Category){}
+}
+
+message ItemLine{
+    string itemLineNm = 1;
+    string itemLineDesc = 2;
+    int64 itemLineDt = 3;
+    double itemValue = 4;
+    Category category = 5;
+}
+
+service ItemLineService {
+    rpc AddItemLine(ItemLine) returns (MsgResponse) {}
 }

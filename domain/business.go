@@ -3,6 +3,7 @@ package domain
 import (
 	"database/sql"
 	"fmt"
+	"math/big"
 	"time"
 )
 
@@ -18,7 +19,7 @@ const (
 //CommandMessage represent message from message server
 type CommandMessage struct {
 	id         int64
-	messageSeq int64
+	messageSeq uint64
 	info       string
 	status     string
 	msgType    string
@@ -26,7 +27,7 @@ type CommandMessage struct {
 	createDt   time.Time
 }
 
-//Category represent category
+//Category represents category
 type Category struct {
 	id           int64
 	categoryNm   string
@@ -35,6 +36,20 @@ type Category struct {
 	userID       string
 	revDt        time.Time
 	revBy        string
+}
+
+//ItemLine represents item_line
+type ItemLine struct {
+	id            int64
+	itemLineNm    string
+	itemLine      string
+	itemLineDesc  string
+	itemLineDt    time.Time
+	itemLineValue big.Float
+	categoryID    int64
+	userID        string
+	revDt         time.Time
+	revBy         string
 }
 
 //Save save msg
@@ -54,7 +69,7 @@ func (mp *CommandMessage) Save(tx *sql.Tx) error {
 		mp.revBy).Scan(&mp.id)
 }
 
-//Save persist Category to Category table
+//Save persist Category to category table
 func (cat *Category) Save(tx *sql.Tx) error {
 	query := `INSERT INTO category(category_nm, category_desc, category_type, user_id, rev_dt, rev_by) 
 	VALUES($1, $2, $3, $4, CURRENT_TIMESTAMP, $5) RETURNING id`
@@ -64,4 +79,9 @@ func (cat *Category) Save(tx *sql.Tx) error {
 		cat.categoryType,
 		cat.userID,
 		cat.revBy).Scan(&cat.id)
+}
+
+//Save persist ItemLine to item_line table
+func (itl *ItemLine) Save(tx *sql.Tx) error {
+	return nil
 }

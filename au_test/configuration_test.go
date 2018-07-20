@@ -1,4 +1,4 @@
-package main
+package au_test
 
 import (
 	"auservices/utilities"
@@ -15,7 +15,15 @@ func TestDevCreateConfiguration(t *testing.T) {
 		t.Errorf("Errror: %v", err)
 	}
 	cfg := utilities.GetConfiguration()
-	t.Logf("info: %+v", cfg)
+	expectedCfg := utilities.Configuration{
+		ApplicationPort:   7777,
+		MsgURL:            "nats://localhost:4222",
+		MsgClusterID:      "api-cluster",
+		DbDriver:          "postgres",
+		DbURL:             "postgres://docker:docker@localhost/au?sslmode=disable",
+		CategoryChannelID: "category-channel",
+	}
+	equals(t, expectedCfg, cfg)
 }
 
 func TestProdCreateConfiguration(t *testing.T) {
@@ -30,5 +38,13 @@ func TestProdCreateConfiguration(t *testing.T) {
 		t.Errorf("Errror: %v", err)
 	}
 	cfg := utilities.GetConfiguration()
-	t.Logf("info: %+v", cfg)
+	expectedCfg := utilities.Configuration{
+		ApplicationPort:   7777,
+		MsgURL:            "nats://prodUrl:4223",
+		MsgClusterID:      "api-cluster",
+		DbDriver:          "postgres",
+		DbURL:             "user:pass@tcp(prodbUrl:3306)/audb",
+		CategoryChannelID: "category-channel",
+	}
+	equals(t, expectedCfg, cfg)
 }

@@ -63,6 +63,7 @@ func createMessageConnection(defaultMsgInfo MessageHanderInfo, cfg MessageHander
 	if cfg.msgURL != "" {
 		msgURL = cfg.msgURL
 	}
+	log.Printf("connecting msg server with clusterId:%s, clientId:%s, url:%s", clusterID, clientID, msgURL)
 	return stan.Connect(clusterID, clientID, stan.NatsURL(msgURL))
 }
 

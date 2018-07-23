@@ -95,6 +95,9 @@ func (m *MessagePublisher) Close() error {
 // PublishEvent publish
 func (m *MessagePublisher) PublishEvent(channel string, msg string, fn stan.AckHandler) {
 	publishMsgHandler := func(uid string, err error) {
+		log.Printf(`Run with default PublishHandler since fn is null. 
+		If this is not your intention, please correct your code`)
+
 		if err != nil {
 			log.Printf("publishMsgHandler error msg, %v\n", err)
 		} else {
@@ -137,6 +140,8 @@ func (m *MessageSubscriber) Close() error {
 //SubscribeEvent subscribe
 func (m *MessageSubscriber) SubscribeEvent(channel string, durableID string, fn stan.MsgHandler) {
 	handler := func(msg *stan.Msg) {
+		log.Printf(`Run with default SubscriberHandler since fn is null. 
+		If this is not your intention, please correct your code`)
 		cmnt := fmt.Sprintf("msg info:%v", msg)
 		if m.lastProcessedSeq == 0 {
 			log.Println("start up,", cmnt)

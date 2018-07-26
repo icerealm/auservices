@@ -40,5 +40,6 @@ CREATE TABLE item_line (
     category_id bigint references category(ID) NOT NULL,
     user_id varchar(64) NOT NULL,
     rev_dt timestamp default CURRENT_TIMESTAMP,
-    rev_by varchar(64) NOT NULL
+    rev_by varchar(64) NOT NULL,
+    UNIQUE(category_id, item_line_nm, user_id)
 );

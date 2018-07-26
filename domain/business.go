@@ -3,7 +3,6 @@ package domain
 import (
 	"database/sql"
 	"fmt"
-	"math/big"
 	"time"
 )
 
@@ -42,10 +41,9 @@ type Category struct {
 type ItemLine struct {
 	id            int64
 	itemLineNm    string
-	itemLine      string
 	itemLineDesc  string
 	itemLineDt    time.Time
-	itemLineValue big.Float
+	itemLineValue float64
 	categoryID    int64
 	userID        string
 	revDt         time.Time

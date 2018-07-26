@@ -117,9 +117,22 @@ func CreateItemLine(db *sql.DB, msgSequence uint64, apiItemLine *api.ItemLine, w
 		tx.Rollback()
 		return err
 	}
-
+	repository := &Repository{
+		dbConn: db,
+	}
+	category, err := repository.FindCategoryByName(apiItemLine.Category.Name, apiItemLine.Category.User.Userid)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
 	itemLine := &ItemLine{
-		itemLineNm: apiItemLine.ItemLineNm,
+		itemLineNm:    apiItemLine.ItemLineNm,
+		itemLineDesc:  apiItemLine.ItemLineDesc,
+		itemLineDt:    time.Unix(apiItemLine.ItemLineDt, 0),
+		itemLineValue: apiItemLine.ItemValue,
+		categoryID:    category.id,
+		userID:        apiItemLine.Category.User.Userid,
+		revBy:         whoUpdate,
 	}
 	if err = itemLine.Save(tx); err != nil {
 		tx.Rollback()

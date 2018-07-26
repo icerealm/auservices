@@ -22,6 +22,7 @@ func TestDevCreateConfiguration(t *testing.T) {
 		DbDriver:          "postgres",
 		DbURL:             "postgres://docker:docker@localhost/au?sslmode=disable",
 		CategoryChannelID: "category-channel",
+		WhoUpdate:         "au-app",
 	}
 	equals(t, expectedCfg, cfg)
 }
@@ -45,6 +46,7 @@ func TestProdCreateConfiguration(t *testing.T) {
 		DbDriver:          "postgres",
 		DbURL:             "user:pass@tcp(prodbUrl:3306)/audb",
 		CategoryChannelID: "category-channel",
+		WhoUpdate:         "au-app",
 	}
 	equals(t, expectedCfg, cfg)
 }

@@ -71,7 +71,7 @@ func initItemLineSubscriber() *MessageSubscriber {
 	if err != nil {
 		log.Fatalf("could not initial itemLine subscriber")
 	}
-	sub.SubscribeEvent(kitemLineChannelID, durableCategoryID, nil)
+	sub.SubscribeEvent(kitemLineChannelID, durableCategoryID, itemLineEventMsgHandler)
 	return sub
 }
 
@@ -88,7 +88,8 @@ func shouldRejectError(err error) bool {
 //categoryEventMsgHandler to handle business logic for category event
 func categoryEventMsgHandler(msg *stan.Msg) {
 	go func(m *stan.Msg) {
-		db, err := domain.GetConnection(utilities.GetConfiguration())
+		cfg := utilities.GetConfiguration()
+		db, err := domain.GetConnection(cfg)
 
 		if err != nil {
 			log.Fatalf("Category Event, error while connecting to database: %v", err)
@@ -100,7 +101,7 @@ func categoryEventMsgHandler(msg *stan.Msg) {
 			log.Printf("Category Event, error while converting message data: %v, msgInfo:%+v \n", err, msg)
 			m.Ack()
 		} else {
-			err = domain.CreateCategory(db, msg.Sequence, &category, "cat-subscriber")
+			err = domain.CreateCategory(db, msg.Sequence, &category, cfg.WhoUpdate)
 			if shouldRejectError(err) {
 				log.Printf("Category Event, reject error and force ackknowledge msg sequence:%v \n", msg.Sequence)
 			} else if err != nil {
@@ -113,11 +114,24 @@ func categoryEventMsgHandler(msg *stan.Msg) {
 
 func itemLineEventMsgHandler(msg *stan.Msg) {
 	go func(m *stan.Msg) {
-		db, err := domain.GetConnection(utilities.GetConfiguration())
+		cfg := utilities.GetConfiguration()
+		db, err := domain.GetConnection(cfg)
 		if err != nil {
 			log.Fatalf("ItemLine Event, error while connecting to database: %v", err)
 		}
 		defer db.Close()
-
+		var itemLine api.ItemLine
+		if err := json.Unmarshal(msg.Data, &itemLine); err != nil {
+			log.Printf("ItemLine Event, error while converting message data: %v, msgInfo:%+v \n", err, msg)
+			m.Ack()
+		} else {
+			err = domain.CreateItemLine(db, msg.Sequence, &itemLine, cfg.WhoUpdate)
+			if shouldRejectError(err) {
+				log.Printf("ItemLine Event, reject error and force ackknowledge msg sequence:%v \n", msg.Sequence)
+			} else if err != nil {
+				log.Printf("ItemLine Event, error while inserting data: %v, msgInfo:%+v \n", err, msg)
+			}
+			m.Ack()
+		}
 	}(msg)
 }

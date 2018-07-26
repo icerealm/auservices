@@ -13,6 +13,7 @@ type Configuration struct {
 	DbDriver          string
 	DbURL             string
 	CategoryChannelID string
+	WhoUpdate         string
 }
 
 //appConfig represent configuration

@@ -34,18 +34,8 @@ func TestPing(t *testing.T) {
 	equals(t, "beating...", resp.Greeting)
 }
 
-func TestFindCategories(t *testing.T) {
-	conn := prepareConn()
-	defer conn.Close()
-	c := api.NewCategoryServicesClient(conn)
-	q := &api.CategoryQuery{Query: "test"}
-	_, err := c.FindCatetories(context.Background(), q)
-	ok(t, err)
-	// t.Logf("FindCatetories resp:%v", resp)
-}
-
-var categoryName = "test insert 4"
-var categoryDescription = "test"
+var categoryName = "test insert 5"
+var categoryDescription = "test 5"
 var userId = "us1343"
 
 func TestAddCetogory(t *testing.T) {
@@ -61,6 +51,30 @@ func TestAddCetogory(t *testing.T) {
 		})
 	if err != nil {
 		t.Errorf("Error when calling AddCategory: %s", err)
+	}
+	equals(t, &api.MsgResponse{ResponseMsg: "Created"}, resp)
+}
+
+func TestAddItemLine(t *testing.T) {
+	conn := prepareConn()
+	defer conn.Close()
+	c := api.NewItemLineServiceClient(conn)
+	category := api.Category{
+		Name:        categoryName,
+		Description: categoryDescription,
+		Type:        1,
+		User:        &api.User{Userid: userId},
+	}
+	resp, err := c.AddItemLine(context.Background(),
+		&api.ItemLine{
+			ItemLineNm:   "item line 2.1",
+			ItemLineDesc: "item line desc2.1",
+			ItemLineDt:   time.Now().Unix(),
+			ItemValue:    203.5,
+			Category:     &category,
+		})
+	if err != nil {
+		t.Errorf("Error when calling AddItemLine: %s", err)
 	}
 	equals(t, &api.MsgResponse{ResponseMsg: "Created"}, resp)
 }
@@ -87,26 +101,12 @@ func TestGetCategoryByName(t *testing.T) {
 	t.Logf("data = %+v", cat)
 }
 
-func TestAddItemLine(t *testing.T) {
+func TestFindCategories(t *testing.T) {
 	conn := prepareConn()
 	defer conn.Close()
-	c := api.NewItemLineServiceClient(conn)
-	category := api.Category{
-		Name:        "test insert 4",
-		Description: "test",
-		Type:        1,
-		User:        &api.User{Userid: "us1343"},
-	}
-	resp, err := c.AddItemLine(context.Background(),
-		&api.ItemLine{
-			ItemLineNm:   "item line 1",
-			ItemLineDesc: "item line desc",
-			ItemLineDt:   time.Now().Unix(),
-			ItemValue:    200.25,
-			Category:     &category,
-		})
-	if err != nil {
-		t.Errorf("Error when calling AddItemLine: %s", err)
-	}
-	equals(t, &api.MsgResponse{ResponseMsg: "Created"}, resp)
+	c := api.NewCategoryServicesClient(conn)
+	q := &api.CategoryQuery{Query: "test"}
+	_, err := c.FindCatetories(context.Background(), q)
+	ok(t, err)
+	// t.Logf("FindCatetories resp:%v", resp)
 }

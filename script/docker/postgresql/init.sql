@@ -43,3 +43,9 @@ CREATE TABLE item_line (
     rev_by varchar(64) NOT NULL,
     UNIQUE(category_id, item_line_nm, user_id)
 );
+
+-- SQL FOR materialize view - showing total value of each category
+SELECT c.id, c.category_nm, coalesce(v.total,0), c.category_type, c.user_id 
+FROM 
+	(select category_id, sum(item_value) total from item_line group by category_id) as v 
+	RIGHT JOIN category c ON v.category_id = c.id;

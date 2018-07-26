@@ -9,6 +9,8 @@ import (
 	"github.com/nats-io/go-nats-streaming"
 )
 
+//General helper function for publisher and subcriber
+
 //MessageHanderInfo configuration information
 type MessageHanderInfo struct {
 	clusterID string

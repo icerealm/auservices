@@ -11,6 +11,8 @@ import (
 	"github.com/nats-io/go-nats-streaming"
 )
 
+//Specific logic for subscriber
+
 const (
 	durableCategoryID = "durable-category-id"
 	durableItemID     = "durable-item-id"

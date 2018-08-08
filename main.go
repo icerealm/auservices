@@ -15,9 +15,16 @@ import (
 )
 
 func main() {
-	cfg, err := utilities.LoadConfiguration(os.Args[1])
+	path := "./config/keys.dev.json"
+	if len(os.Args) < 2 {
+		log.Println(fmt.Sprintf("no configuration file path specified in argument, using default path: %s", path))
+	} else {
+		path = os.Args[1]
+	}
+
+	cfg, err := utilities.LoadConfiguration(path)
 	if err != nil {
-		log.Panicln("no configuration file found with path specified:", os.Args[1])
+		log.Panicln("no configuration file found with path specified:", path)
 	}
 	port := cfg.ApplicationPort
 	ltsnr, err := net.Listen("tcp", fmt.Sprintf(":%d", port))

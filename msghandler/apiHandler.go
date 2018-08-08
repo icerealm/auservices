@@ -23,26 +23,17 @@ func (s *Server) SayHello(ctx context.Context, in *api.PingMessage) (*api.PingMe
 
 // FindCatetories values
 func (s *Server) FindCatetories(ctx context.Context, in *api.CategoryQuery) (*api.CategoryList, error) {
-	log.Printf("Receive query message %s", in.Query)
-	categories := []*api.Category{
-		&api.Category{
-			Name:        "Test001",
-			Description: "Desc Test001",
-			Type:        api.CategoryType(api.CategoryType_value["EXPENSE"]),
-			User:        &api.User{Userid: "empapay0013er"},
-		},
-		&api.Category{
-			Name:        "Test002",
-			Description: "Desc Test002",
-			Type:        api.CategoryType(api.CategoryType_value["INCOME"]),
-			User:        &api.User{Userid: "gmarer0014er"},
-		},
-		&api.Category{
-			Name:        "Test003",
-			Description: "Desc Test003",
-			Type:        api.CategoryType(api.CategoryType_value["INCOME"]),
-			User:        &api.User{Userid: "berarer0015er"},
-		},
+	log.Printf("Receive query message %v", in)
+	db, err := domain.GetConnection(utilities.GetConfiguration())
+	if err != nil {
+		log.Println("FindCatetories, error while connecting to database:", err)
+		return nil, err
+	}
+	defer db.Close()
+	categories, err := domain.GetCategories(db, in)
+	if err != nil {
+		log.Println("FindCatetories, error while retrieving category data:", err)
+		return nil, err
 	}
 	return &api.CategoryList{
 		Categories: categories,

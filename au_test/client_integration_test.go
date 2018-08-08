@@ -105,8 +105,10 @@ func TestFindCategories(t *testing.T) {
 	conn := prepareConn()
 	defer conn.Close()
 	c := api.NewCategoryServicesClient(conn)
-	q := &api.CategoryQuery{Query: "test"}
-	_, err := c.FindCatetories(context.Background(), q)
+	q := &api.CategoryQuery{Query: "",
+		User: &api.User{Userid: "us1343"},
+	}
+	resp, err := c.FindCatetories(context.Background(), q)
 	ok(t, err)
-	// t.Logf("FindCatetories resp:%v", resp)
+	t.Logf("FindCatetories resp:%v", resp)
 }

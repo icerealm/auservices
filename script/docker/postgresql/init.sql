@@ -45,7 +45,19 @@ CREATE TABLE item_line (
 );
 
 -- SQL FOR materialize view - showing total value of each category
-SELECT c.id, c.category_nm, coalesce(v.total,0), c.category_type, c.user_id 
+SELECT c.id, c.category_nm, coalesce(v.total,0) total, c.category_type, c.user_id, to_char(now(), 'MM/YYYY') month_year
 FROM 
-	(select category_id, sum(item_value) total from item_line group by category_id) as v 
+	(select category_id, sum(item_value) total 
+	 from item_line where item_line_dt between (date_trunc('month', now())::date) and 
+												 (date_trunc('month', now()::date) + interval '1 month' - interval '1 day')::date
+												group by category_id) as v 
 	RIGHT JOIN category c ON v.category_id = c.id;
+
+-- SQL - showing items of the month
+select * from item_line where item_line_dt between (date_trunc('month', now())::date) and now();
+
+-- SQL - showing items of the week
+select * from item_line where item_line_dt between date_trunc('week', now())::date and (date_trunc('week', now()) + '6 days') ::date;
+
+
+

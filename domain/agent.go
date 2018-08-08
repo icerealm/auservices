@@ -28,6 +28,29 @@ func getQueryValue(key string, query string) string {
 	return ""
 }
 
+//GetCategories get categories by userId
+func GetCategories(db *sql.DB, query *api.CategoryQuery) ([]*api.Category, error) {
+	user := query.User
+	if user == nil {
+		return []*api.Category{}, nil
+	}
+	repo := Repository{dbConn: db}
+	categories, err := repo.FindAllCategories(user.Userid)
+	if err != nil {
+		return nil, err
+	}
+	var categoryList []*api.Category
+	for _, category := range categories {
+		categoryList = append(categoryList, &api.Category{
+			Name:        category.categoryNm,
+			Description: category.categoryDesc,
+			Type:        api.CategoryType(api.CategoryType_value[category.categoryType]),
+			User:        &api.User{Userid: category.userID},
+		})
+	}
+	return categoryList, nil
+}
+
 //GetCategoryByName get category by name
 func GetCategoryByName(db *sql.DB, query *api.CategoryQuery) (*api.Category, error) {
 	name := getQueryValue("name", query.Query)

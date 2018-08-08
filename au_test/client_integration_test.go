@@ -97,8 +97,10 @@ func TestGetCategoryByName(t *testing.T) {
 		User:  &api.User{Userid: userId},
 	}
 	cat, err := c.GetCategoryByName(context.Background(), query)
+	if cat.Name != categoryName {
+		t.Errorf("there is a problem")
+	}
 	ok(t, err)
-	t.Logf("data = %+v", cat)
 }
 
 func TestFindCategories(t *testing.T) {
@@ -110,5 +112,23 @@ func TestFindCategories(t *testing.T) {
 	}
 	resp, err := c.FindCatetories(context.Background(), q)
 	ok(t, err)
-	t.Logf("FindCatetories resp:%v", resp)
+	if len(resp.Categories) <= 0 {
+		t.Errorf("there is a problem")
+	}
+	// t.Logf("FindCatetories resp:%v", resp)
+}
+
+func TestFindCategoriesNoData(t *testing.T) {
+	conn := prepareConn()
+	defer conn.Close()
+	c := api.NewCategoryServicesClient(conn)
+	q := &api.CategoryQuery{Query: "",
+		User: &api.User{Userid: "noId"},
+	}
+	resp, err := c.FindCatetories(context.Background(), q)
+	ok(t, err)
+	if len(resp.Categories) > 0 {
+		t.Errorf("there is a problem")
+	}
+	// t.Logf("FindCatetories resp:%v", resp)
 }
